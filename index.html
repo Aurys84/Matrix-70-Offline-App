@@ -1,7 +1,10 @@
+<!DOCTYPE html>
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <title>Career-Engine v70.0 - A&N Visual - GLOBAL MATRIX</title>
     <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --main-color: #007bb5; }
         body { margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', sans-serif; background: #000; color: #eee; transition: 0.3s; }
@@ -20,7 +23,8 @@
         input, textarea, select { width: 100%; padding: 10px; margin-top: 5px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 4px; box-sizing: border-box; }
         .entry-box { background: #151515; padding: 15px; margin-top: 10px; border-left: 4px solid var(--main-color); border-radius: 4px; position: relative; }
         .add-btn { background: #27ae60; color: white; width: 100%; padding: 12px; border: none; margin-top: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .print-btn { background: var(--main-color); color: white; width: 100%; padding: 18px; border: none; margin-top: 25px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 6px; }
+        .print-btn { background: var(--main-color); color: white; width: 100%; padding: 18px; border: none; margin-top: 25px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: 0.2s; }
+        .print-btn:active { transform: scale(0.98); }
         .cv-paper { width: 210mm; min-height: 297mm; background: white; padding: 40px; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; position: relative; }
         .cv-header { display: flex; gap: 20px; border-bottom: 2px solid var(--main-color); padding-bottom: 20px; margin-bottom: 20px; }
         h1#out-name { margin: 0; color: var(--main-color); font-size: 32px; }
@@ -68,7 +72,7 @@
     <label class="smart-label" id="lbl-photo">FOTÓ FELTÖLTÉSE</label>
     <input type="file" onchange="loadPhoto(event)" style="margin-bottom: 15px;">
 
-    <div class="input-group">
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <div style="flex:1">
             <label class="smart-label" id="lbl-fName">KERESZTNÉV</label>
             <input type="text" id="in-firstName" oninput="updatePreview()">
@@ -79,7 +83,7 @@
         </div>
     </div>
 
-    <div class="input-group">
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <div style="flex:1">
             <label class="smart-label" id="lbl-city">VÁROS</label>
             <input type="text" id="in-city" oninput="updatePreview()">
@@ -90,7 +94,7 @@
         </div>
     </div>
 
-    <div class="input-group">
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <div style="flex:1">
             <label class="smart-label">≡ TÍPUS</label>
             <select id="in-street-type" onchange="updatePreview()">
@@ -129,7 +133,7 @@
         <button onclick="addEntry('work')" class="add-btn" id="lbl-addWork">+ ÚJ MUNKAHELY</button>
     </div>
 
-    <button onclick="window.print()" class="print-btn" id="lbl-printBtn">PDF GENERÁLÁSA</button>
+    <button onclick="exportMatrixPDF()" class="print-btn" id="lbl-printBtn">PDF GENERÁLÁSA</button>
 </div>
 
 <div class="preview-side">
@@ -163,7 +167,7 @@ const summariesDB = {
             "9": "Az oktatási és egészségügyi szektorban elkötelezetten dolgozom az emberek segítése és fejlődése érdekében.",
             "10": "A vendéglátás és luxusszolgáltatások terén nyújtok prémium minőségű kiszolgálást és vendégélményt.",
             "11": "Stratégiai tervezéssel és hosszú távú célok módszeres megvalósításával segítem a szervezeti sikereket.",
-            "12": "Adatalapú elemzésekkel és pontos riportálással támogatom a vezetés döntéshozatali folyamatait.",
+            "12": "Adatalapú elemzésekkelและpontos riportálással támogatom a vezetés döntéshozatali folyamatait.",
             "13": "Műszaki karbantartási és szervizelési feladatokat látok el, biztosítva az eszközök folyamatos és üzembiztos működését.",
             "14": "A biztonság és rendvédelem területén fegyelmezett, felelősségteljes és éber munkát végzek.",
             "15": "Sokoldalú és szakmailag elkötelezett munkatárs vagyok, aki rugalmasan alkalmazkodik a változó kihívásokhoz." 
@@ -345,6 +349,24 @@ const summariesDB = {
         if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
     }
 
+    // Golyóálló offline Android PDF-generáló motor logikája
+    function exportMatrixPDF() {
+        const element = document.getElementById('cv-paper');
+        const lastName = document.getElementById('in-lastName').value || "Matrix";
+        const firstName = document.getElementById('in-firstName').value || "CV";
+        
+        const opt = {
+            margin:       10,
+            filename:     `${lastName}_${firstName}_CV.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // Elindítjuk az offline exportálást közvetlenül a belső memóriába
+        html2pdf().set(opt).from(element).save();
+    }
+
     window.onload = () => {
         const colors = ["#007bb5", "#e67e22", "#27ae60", "#c0392b", "#8e44ad", "#1a1a1a", "#f1c40f", "#16a085", "#d35400", "#2c3e50"];
         colors.forEach(c => {
@@ -352,7 +374,7 @@ const summariesDB = {
             b.onclick = () => { document.documentElement.style.setProperty('--main-color', c); updatePreview(); };
             document.getElementById('color-picker').appendChild(b);
         });
-     for(let i=1; i<=10; i++) {
+        for(let i=1; i<=10; i++) {
             let b = document.createElement('button'); b.className = 'style-btn'; b.innerText = i;
             b.onclick = () => { document.body.className = 'style-' + i; updatePreview(); };
             document.getElementById('style-picker').appendChild(b);
@@ -360,14 +382,12 @@ const summariesDB = {
         refreshMenu();
         updateInterface();
 
-    // MÁTRIX OFFLINE PAJZS ÉS ÉRTESÍTÉSEK AKTIVÁLÁSA
+        // MÁTRIX OFFLINE PAJZS ÉS ÉRTESÍTÉSEK AKTIVÁLÁSA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(reg => {
                         console.log('Mátrix Páncél aktív!', reg);
-                        
-                        // Értesítési engedély kérése a regisztráció után
                         if ('Notification' in window) {
                             Notification.requestPermission().then(permission => {
                                 if (permission === 'granted') {
@@ -379,7 +399,7 @@ const summariesDB = {
                     .catch(err => console.log('Hiba a páncélozásnál:', err));
             });
         }
-    }; // Itt zárul le a window.onload
+    };
 </script> 
 </body>
 </html>
