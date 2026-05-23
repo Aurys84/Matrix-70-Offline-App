@@ -8,7 +8,10 @@
         :root { --main-color: #007bb5; }
         body { margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', sans-serif; background: #000; color: #eee; transition: 0.3s; }
         .editor-side { width: 42%; padding: 25px; overflow-y: auto; background: #111; border-right: 3px solid var(--main-color); }
-        .preview-side { width: 58%; background: #333; display: flex; justify-content: center; padding: 40px; overflow-y: auto; }
+        
+        /* JAVÍTVA: align-items: flex-start; hozzáadva, hogy ne csússzon ki a képernyőből a papír teteje és alja */
+        .preview-side { width: 58%; background: #333; display: flex; justify-content: center; align-items: flex-start; padding: 40px; overflow-y: auto; }
+        
         .logo-area { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .brand-circle { width: 45px; height: 45px; background: var(--main-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border: 2px solid #fff; font-size: 20px; }
         .lang-grid { display: flex; gap: 8px; margin-bottom: 20px; }
@@ -23,7 +26,10 @@
         .entry-box { background: #151515; padding: 15px; margin-top: 10px; border-left: 4px solid var(--main-color); border-radius: 4px; position: relative; }
         .add-btn { background: #27ae60; color: white; width: 100%; padding: 12px; border: none; margin-top: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .print-btn { background: var(--main-color); color: white; width: 100%; padding: 18px; border: none; margin-top: 25px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 6px; }
-        .cv-paper { width: 210mm; min-height: 297mm; background: white; padding: 40px; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; position: relative; }
+        
+        /* JAVÍTVA: height: auto !important; overflow: visible; és kapott egy kis alsó margót (margin-bottom: 40px) */
+        .cv-paper { width: 210mm; min-height: 297mm; height: auto !important; background: white; padding: 40px; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; position: relative; overflow: visible; margin-bottom: 40px; }
+        
         .cv-header { display: flex; gap: 20px; border-bottom: 2px solid var(--main-color); padding-bottom: 20px; margin-bottom: 20px; }
         h1#out-name { margin: 0; color: var(--main-color); font-size: 32px; }
         h3 { border-bottom: 1px solid #eee; color: var(--main-color); padding-bottom: 5px; margin-top: 25px; text-transform: uppercase; }
@@ -40,138 +46,164 @@
         body.style-9 .cv-header { align-items: flex-end; border-bottom-width: 5px; }
         body.style-10 .cv-paper::before { content: ''; position: absolute; top: 0; left: 0; width: 15px; height: 100%; background: var(--main-color); }
 
-        @media print { .editor-side { display: none; } .preview-side { width: 100%; padding: 0; background: white; } .cv-paper { box-shadow: none; width: 100%; } }
+        @media print { .editor-side { display: none; } .preview-side { width: 100%; padding: 0; background: white; } .cv-paper { box-shadow: none; width: 100%; margin: 0; } }
     </style>
 </head>
 <body class="style-1">
-
-<div class="editor-side" id="editor-side">
-    <div class="logo-area">
-        <div class="brand-circle">A&N</div>
-        <h1 id="lbl-engineName">Career-Engine</h1>
-    </div>
-
-    <div class="lang-grid">
-        <button class="btn-lang active" onclick="setMode('hu', this)">HU</button>
-        <button class="btn-lang" onclick="setMode('en', this)">EN</button>
-        <button class="btn-lang" onclick="setMode('de', this)">DE</button>
-    </div>
-
-    <div class="picker-row">
-        <label class="smart-label" id="lbl-colors">SZÍNEK</label>
-        <div class="color-grid" id="color-picker"></div>
-    </div>
-
-    <div class="picker-row">
-        <label class="smart-label" id="lbl-styles">STÍLUSOK</label>
-        <div class="style-grid" id="style-picker"></div>
-    </div>
-
-    <label class="smart-label" id="lbl-photo">FOTÓ FELTÖLTÉSE</label>
-    <input type="file" onchange="loadPhoto(event)" style="margin-bottom: 15px;">
-
-    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <div style="flex:1">
-            <label class="smart-label" id="lbl-fName">KERESZTNÉV</label>
-            <input type="text" id="in-firstName" oninput="updatePreview()">
+    
+    <div class="editor-side" id="editor-side">
+        <div class="logo-area">
+            <div class="brand-circle">A&N</div>
+            <h1 id="lbl-engineName">Career-Engine</h1>
         </div>
-        <div style="flex:1">
-            <label class="smart-label" id="lbl-lName">VEZETÉKNÉV</label>
-            <input type="text" id="in-lastName" oninput="updatePreview()">
+
+        <div class="lang-grid">
+            <button class="btn-lang active" onclick="setMode('hu', this)">HU</button>
+            <button class="btn-lang" onclick="setMode('en', this)">EN</button>
+            <button class="btn-lang" onclick="setMode('de', this)">DE</button>
         </div>
-    </div>
 
-    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <div style="flex:1">
-            <label class="smart-label" id="lbl-city">VÁROS</label>
-            <input type="text" id="in-city" oninput="updatePreview()">
+        <div class="picker-row">
+            <label class="smart-label" id="lbl-colors">SZÍNEK</label>
+            <div class="color-grid" id="color-picker"></div>
         </div>
-        <div style="flex:1">
-            <label class="smart-label" id="lbl-street">UTCA</label>
-            <input type="text" id="in-street" oninput="updatePreview()">
+
+        <div class="picker-row">
+            <label class="smart-label" id="lbl-styles">STÍLUSOK</label>
+            <div class="style-grid" id="style-picker"></div>
         </div>
-    </div>
 
-    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <div style="flex:1">
-            <label class="smart-label">≡ TÍPUS</label>
-            <select id="in-street-type" onchange="updatePreview()">
-                <option value="utca">utca / street / straße</option>
-                <option value="út">út / road / straße</option>
-                <option value="tér">tér / square / platz</option>
-            </select>
-        </div>
-        <div style="width:30%">
-            <label class="smart-label">HÁZSZÁM</label>
-            <input type="text" id="in-house" oninput="updatePreview()">
-        </div>
-    </div>
+        <label class="smart-label" id="lbl-photo">FOTÓ FELTÖLTÉSE</label>
+        <input type="file" onchange="loadPhoto(event)" style="margin-bottom: 15px;">
 
-    <label class="smart-label" id="lbl-phone">TELEFON</label>
-    <input type="text" id="in-phone" oninput="updatePreview()">
-
-    <label class="smart-label" id="lbl-email">EMAIL</label>
-    <input type="email" id="in-email" oninput="updatePreview()">
-
-    <label class="smart-label" id="lbl-summaryHeader">BEMUTATKOZÁS VÁLASZTÓ</label>
-    <select id="sel-summary" onchange="applyMatrixSummary()" style="background: #1a3a5a; color: white; border: 1px solid #007bb5;">
-    </select>
-
-    <textarea id="in-summary" rows="8" oninput="updatePreview()"></textarea>
-
-    <div id="edu-area">
-        <h3 id="lbl-eduHeader">TANULMÁNYOK</h3>
-        <div id="edu-container"></div>
-        <button onclick="addEntry('edu')" class="add-btn" id="lbl-addEdu">+ ÚJ ISKOLA</button>
-    </div>
-
-    <div id="work-area">
-        <h3 id="lbl-workHeader">TAPASZTALAT</h3>
-        <div id="work-container"></div>
-        <button onclick="addEntry('work')" class="add-btn" id="lbl-addWork">+ ÚJ MUNKAHELY</button>
-    </div>
-
-    <button onclick="androidMentesPNG()" class="print-btn" id="lbl-printBtn">PNG MENTÉSE</button>
-</div>
-
-<div class="preview-side" id="preview-side">
-    <div class="cv-paper" id="cv-paper">
-        <div class="cv-header">
-            <div id="out-photo-box" style="display:none; width:130px; height:160px; overflow:hidden; border: 1px solid #eee; margin-right: 20px;">
-                <img id="out-photo" style="width:100%; height:100%; object-fit: cover;">
+        <div class="input-group">
+            <div style="flex:1">
+                <label class="smart-label" id="lbl-fName">KERESZTNÉV</label>
+                <input type="text" id="in-firstName" oninput="updatePreview()">
             </div>
-            <div class="header-text">
-                <h1 id="out-name">NAME</h1>
-                <div id="out-contact" style="margin-top:10px; font-size:14px; color:#555;"></div>
+            <div style="flex:1">
+                <label class="smart-label" id="lbl-lName">VEZETÉKNÉV</label>
+                <input type="text" id="in-lastName" oninput="updatePreview()">
             </div>
         </div>
-        <div id="main-content"></div>
+
+        <div class="input-group">
+            <div style="flex:1">
+                <label class="smart-label" id="lbl-city">VÁROS</label>
+                <input type="text" id="in-city" oninput="updatePreview()">
+            </div>
+            <div style="flex:1">
+                <label class="smart-label" id="lbl-street">UTCA</label>
+                <input type="text" id="in-street" oninput="updatePreview()">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div style="flex:1">
+                <label class="smart-label">≡ TÍPUS</label>
+                <select id="in-street-type" onchange="updatePreview()">
+                    <option value="utca">utca / street / straße</option>
+                    <option value="út">út / road / straße</option>
+                    <option value="tér">tér / square / platz</option>
+                </select>
+            </div>
+            <div style="width:30%">
+                <label class="smart-label">HÁZSZÁM</label>
+                <input type="text" id="in-house" oninput="updatePreview()">
+            </div>
+        </div>
+
+        <label class="smart-label" id="lbl-phone">TELEFON</label>
+        <input type="text" id="in-phone" oninput="updatePreview()">
+
+        <label class="smart-label" id="lbl-email">EMAIL</label>
+        <input type="email" id="in-email" oninput="updatePreview()">
+
+        <label class="smart-label" id="lbl-summaryHeader">BEMUTATKOZÁS VÁLASZTÓ</label>
+        <select id="sel-summary" onchange="applyMatrixSummary()" style="background: #1a3a5a; color: white; border: 1px solid #007bb5;">
+        </select>
+
+        <textarea id="in-summary" rows="8" oninput="updatePreview()"></textarea>
+
+        <div id="edu-area">
+            <h3 id="lbl-eduHeader">TANULMÁNYOK</h3>
+            <div id="edu-container"></div>
+            <button onclick="addEntry('edu')" class="add-btn" id="lbl-addEdu">+ ÚJ ISKOLA</button>
+        </div>
+
+        <div id="work-area">
+            <h3 id="lbl-workHeader">TAPASZTALAT</h3>
+            <div id="work-container"></div>
+            <button onclick="addEntry('work')" class="add-btn" id="lbl-addWork">+ ÚJ MUNKAHELY</button>
+        </div>
+<button onclick="mentesWordbe()" class="print-btn" id="lbl-printBtn">WORD EXPORT</button>
+
+        <div id="word-notice" style="margin-top: 15px; padding: 12px; background: #1a3a5a; border: 1px solid #007bb5; border-radius: 4px; font-size: 11px; line-height: 1.4; color: #fff;">
+            <b>HU:</b> Mentés után engedélyezd a szerkesztett nézetet (Enable Editing) a Wordben a kép megtekintéséhez.<br>
+            <b>EN:</b> After saving, please enable editing in Word to view the image.<br>
+            <b>DE:</b> Aktivieren Sie nach dem Speichern die Bearbeitung in Word, um das Bild anzuzeigen.
+        </div>
     </div>
-</div>
+
+       
+    <div class="preview-side" id="preview-side">
+        <div class="cv-paper" id="cv-paper">
+            <div class="cv-header">
+                <div id="out-photo-box" style="display:none; width:130px; height:160px; overflow:hidden; border: 1px solid #eee; margin-right: 20px;">
+                    <img id="out-photo" style="width:100%; height:100%; object-fit: cover;">
+                </div>
+                <div class="header-text">
+                    <h1 id="out-name">NAME</h1>
+                    <div id="out-contact" style="margin-top:10px; font-size:14px; color:#555;"></div>
+                </div>
+            </div>
+            <div id="main-content"></div>
+        </div>
+    </div>
 
 <script src="database.js"></script>
 
 <script>
-!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):(t="undefined"!=typeof globalThis?globalThis:t||self).html2canvas=e()}(this,function(){"use strict";return function t(e,r){return Promise.resolve({then:function(t){html2canvas(e,r).then(t)}})}});
-if(typeof html2canvas!=="function"){var script=document.createElement('script');script.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";document.head.appendChild(script);}
-</script>
+function mentesWordbe() {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const mainColor = rootStyles.getPropertyValue('--main-color').trim() || '#007bb5';
+    const currentStyle = document.body.className;
+    
+    // Másoljuk a tartalmat, de tisztítjuk a fotó-dobozt
+    let content = document.getElementById('cv-paper').innerHTML;
+    
+    const photoImg = document.getElementById('out-photo');
+    const photoBox = document.getElementById('out-photo-box');
+    
+    // Ha van kép, kódoljuk Base64-be
+    if (photoBox && photoBox.style.display !== 'none' && photoImg.src) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 130;
+        canvas.height = 160;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(photoImg, 0, 0, 130, 160);
+        const dataUrl = canvas.toDataURL("image/png");
+        
+        // Kép beillesztése fix, inline stílussal, amit a Word biztosan renderel
+        const imgHtml = `<img src="${dataUrl}" style="width:130px; height:160px; float:left; margin-right:20px; border:1px solid #ccc; display:block;">`;
+        content = content.replace(/<div id="out-photo-box"[\s\S]*?<\/div>/, imgHtml);
+    }
 
-<script>
-function androidMentesPNG() {
-    const element = document.getElementById('cv-paper');
-    const lastName = document.getElementById('in-lastName').value || "Matrix";
-    const firstName = document.getElementById('in-firstName').value || "CV";
+    const wordCSS = `body { font-family: 'Segoe UI', Arial, sans-serif; } .cv-paper { padding: 40px; background: white; } .cv-header { border-bottom: 2px solid ${mainColor}; padding-bottom: 20px; margin-bottom: 20px; overflow: hidden; } h1#out-name { color: ${mainColor}; font-size: 32px; } h3 { color: ${mainColor}; text-transform: uppercase; border-bottom: 1px solid #eee; margin-top: 25px; clear: both; }`;
+    
+    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export</title><style>" + wordCSS + "</style></head><body class='" + currentStyle + "'><div class='cv-paper'>";
+    const footer = "</div></body></html>";
 
-    html2canvas(element, { useCORS: true, scale: 2, logging: false }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `${lastName}_${firstName}_Matrix.png`;
-        link.href = canvas.toDataURL('image/png');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }).catch(err => alert("Mentési hiba: " + err));
+    const blob = new Blob(['\ufeff', header + content + footer], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'Career-Engine-Export.doc';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
-
 const summariesDB = {
         hu: { 
             "1": "Több éves szakmai és vezetői tapasztalattal rendelkező szakember vagyok, aki elkötelezett a hatékonyság és a csapatszellem mellett.",
@@ -212,7 +244,7 @@ const summariesDB = {
             "2": "Technologieorientierter Experte mit dem Ziel, komplexe Systeme zu optimieren.",
             "3": "Erfahren in präziser Administration, wobei Genauigkeit eine Grundvoraussetzung ist.",
             "4": "Unterstützung von Vertriebsprozessen mit kundenorientiertem Denken.",
-            "5": "Unterstützung von Projekten mit creative solutions und visual perspective.",
+            "5": "Unterstützung von Projekten mit kreativen Lösungen und visueller Sichtweise.",
             "6": "Sicherung des Warenflusses durch Erfahrung in Logistik und Lieferketten.",
             "7": "Motivierter Berufseinsteiger auf der Suche nach Entwicklungsmöglichkeiten.",
             "8": "Garantie für präzise und zuverlässige Arbeit im handwerklichen Bereich.",
@@ -226,10 +258,10 @@ const summariesDB = {
         }
     };
 
-    const dictionary = {
-        hu: { engineName: "Career-Engine", fName: "KERESZTNÉV", lName: "VEZETÉKNÉV", city: "VÁROS", street: "UTCA", phone: "TELEFON", email: "EMAIL", summaryHeader: "BEMUTATKOZÁS VÁLASZTÓ", summary: "BEMUTATKOZÁS-KÉPESSÉGEK", eduHeader: "TANULMÁNYOK", workHeader: "TAPASZTALAT", addEdu: "+ ÚJ ISKOLA", addWork: "+ ÚJ MUNKAHELY", printBtn: "PNG MENTÉSE", addr: "Cím:", colors: "SZÍNEK", styles: "STÍLUSOK", v_deg: "Képesítés", v_prof: "Szakma", select_hint: "-- HOZZÁADÁS --", menu: ["🔝 Proaktív Vezető", "💻 Tech-Guru", "🎯 Adminisztrátor", "🤝 Ügyfélmágnes", "🎨 Kreatív Vizionárius", "🚛 Logisztikai", "⚡ Junior", "🏗️ Szakmunkás", "🚑 Egészségügy / Oktatás", "💎 Hospitality / Luxus", "🚀 Stratégiai", "📉 Elemző", "🛠️ Karbantartó / Szerviz", "🛡️ Biztonság és Rend", "🌟 Általános Motivált"] },
-        en: { engineName: "Career-Engine", fName: "FIRST NAME", lName: "LAST NAME", city: "CITY", street: "STREET", phone: "PHONE", email: "EMAIL", summaryHeader: "SUMMARY SELECTOR", summary: "SUMMARY-SKILLS", eduHeader: "EDUCATION", workHeader: "EXPERIENCE", addEdu: "+ ADD SCHOOL", addWork: "+ ADD JOB", printBtn: "SAVE PNG", addr: "Address:", colors: "COLORS", styles: "STYLES", v_deg: "Degree", v_prof: "Profession", select_hint: "-- ADD --", menu: ["🔝 Proactive Leader", "💻 Tech-Guru", "🎯 Administrator", "🤝 Customer Magnet", "🎨 Creative Visionary", "🚛 Logistics", "⚡ Junior", "🏗️ Industrial Worker", "🚑 Health / Education", "💎 Hospitality / Luxury", "🚀 Strategic", "📉 Analyst", "🛠️ Technical / Service", "🛡️ Security and Order", "🌟 General Motivated"] },
-        de: { engineName: "Career-Engine", fName: "VORNAME", lName: "NACHNAME", city: "STADT", street: "STRASSE", phone: "TELEFON", email: "EMAIL", summaryHeader: "PROFIL AUSWAHL", summary: "PROFIL-FÄHIGKEITEN", eduHeader: "BILDUNG", workHeader: "ERFAHRUNG", addEdu: "+ SCHULE", addWork: "+ JOB", printBtn: "PNG SPEICHERN", addr: "Adresse:", colors: "FARBEN", styles: "STILE", v_deg: "Abschluss", v_prof: "Beruf", select_hint: "-- HINZÜFÜGEN --", menu: ["🔝 Proaktive Führungskraft", "💻 Tech-Guru", "🎯 Administrator", "🤝 Kundenmagnet", "🎨 Kreativer Visionär", "🚛 Logistik", "⚡ Junior", "🏗️ Facharbeiter", "🚑 Gesundheit / Bildung", "💎 Hospitality / Luxus", "🚀 Strategisch", "📉 Analyst", "🛠️ Technisch / Service", "🛡️ Sicherheit und Ordnung", "🌟 Allgemein Motiviert"] }
+const dictionary = {
+        hu: { engineName: "Career-Engine", fName: "KERESZTNÉV", lName: "VEZETÉKNÉV", city: "VÁROS", street: "UTCA", phone: "TELEFON", email: "EMAIL", summaryHeader: "BEMUTATKOZÁS VÁLASZTÓ", summary: "BEMUTATKOZÁS-KÉPESSÉGEK", eduHeader: "TANULMÁNYOK", workHeader: "TAPASZTALAT", addEdu: "+ ÚJ ISKOLA", addWork: "+ ÚJ MUNKAHELY", printBtn: "WORD EXPORT", addr: "Cím:", colors: "SZÍNEK", styles: "STÍLUSOK", v_deg: "Képesítés", v_prof: "Szakma", select_hint: "-- HOZZÁADÁS --", menu: ["🔝 Proaktív Vezető", "💻 Tech-Guru", "🎯 Adminisztrátor", "🤝 Ügyfélmágnes", "🎨 Kreatív Vizionárius", "🚛 Logisztikai", "⚡ Junior", "🏗️ Szakmunkás", "🚑 Egészségügy / Oktatás", "💎 Hospitality / Luxus", "🚀 Stratégiai", "📉 Elemző", "🛠️ Karbantartó / Szerviz", "🛡️ Biztonság és Rend", "🌟 Általános Motivált"] },
+        en: { engineName: "Career-Engine", fName: "FIRST NAME", lName: "LAST NAME", city: "CITY", street: "STREET", phone: "PHONE", email: "EMAIL", summaryHeader: "SUMMARY SELECTOR", summary: "SUMMARY-SKILLS", eduHeader: "EDUCATION", workHeader: "EXPERIENCE", addEdu: "+ ADD SCHOOL", addWork: "+ ADD JOB", printBtn: "WORD EXPORT", addr: "Address:", colors: "COLORS", styles: "STYLES", v_deg: "Degree", v_prof: "Profession", select_hint: "-- ADD --", menu: ["🔝 Proactive Leader", "💻 Tech-Guru", "🎯 Administrator", "🤝 Customer Magnet", "🎨 Creative Visionary", "🚛 Logistics", "⚡ Junior", "🏗️ Industrial Worker", "🚑 Health / Education", "💎 Hospitality / Luxury", "🚀 Strategic", "📉 Analyst", "🛠️ Technical / Service", "🛡️ Security and Order", "🌟 General Motivated"] },
+        de: { engineName: "Career-Engine", fName: "VORNAME", lName: "NACHNAME", city: "STADT", street: "STRASSE", phone: "TELEFON", email: "EMAIL", summaryHeader: "PROFIL AUSWAHL", summary: "PROFIL-FÄHIGKEITEN", eduHeader: "BILDUNG", workHeader: "ERFAHRUNG", addEdu: "+ SCHULE", addWork: "+ JOB", printBtn: "WORD EXPORT", addr: "Adresse:", colors: "FARBEN", styles: "STILE", v_deg: "Abschluss", v_prof: "Beruf", select_hint: "-- HINZÜFÜGEN --", menu: ["🔝 Proaktive Führungskraft", "💻 Tech-Guru", "🎯 Administrator", "🤝 Kundenmagnet", "🎨 Kreativer Visionär", "🚛 Logistik", "⚡ Junior", "🏗️ Facharbeiter", "🚑 Gesundheit / Bildung", "💎 Hospitality / Luxus", "🚀 Strategisch", "📉 Analyst", "🛠️ Technisch / Service", "🛡️ Sicherheit und Ordnung", "🌟 Allgemein Motiviert"] }
     };
 
     let currentLang = 'hu';
@@ -247,6 +279,7 @@ const summariesDB = {
         refreshAllSelects();
         updatePreview();
     }
+    
     function refreshMenu() {
         const sel = document.getElementById('sel-summary');
         const d = dictionary[currentLang];
@@ -330,7 +363,7 @@ const summariesDB = {
         document.getElementById('out-contact').innerHTML = `<b>${d.phone}</b> ${document.getElementById('in-phone').value}<br><b>EMAIL:</b> ${document.getElementById('in-email').value}<br><b>${d.addr}</b> ${document.getElementById('in-city').value}, ${document.getElementById('in-street').value} ${sType} ${document.getElementById('in-house').value}`;
 
         let html = `<h3>${d.summary}</h3><p style="white-space: pre-wrap;">${document.getElementById('in-summary').value}</p>`;
-        
+
         ['edu', 'work'].forEach(type => {
             let sHtml = `<h3>${d[type + 'Header']}</h3>`;
             document.querySelectorAll('#' + type + '-container .entry-box').forEach(box => {
@@ -354,9 +387,12 @@ const summariesDB = {
             });
             html += sHtml;
         });
+
+        html += '<div style="margin-top:60px; border-top:1px solid #000; width:200px; text-align:center;">Aláírás / Signature</div>';
+        
         document.getElementById('main-content').innerHTML = html;
     }
-
+    
     function loadPhoto(event) {
         const reader = new FileReader();
         reader.onload = function() {
@@ -366,7 +402,7 @@ const summariesDB = {
         }
         if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
     }
-
+    
     window.onload = () => {
         const colors = ["#007bb5", "#e67e22", "#27ae60", "#c0392b", "#8e44ad", "#1a1a1a", "#f1c40f", "#16a085", "#d35400", "#2c3e50"];
         colors.forEach(c => {
@@ -374,18 +410,27 @@ const summariesDB = {
             b.onclick = () => { document.documentElement.style.setProperty('--main-color', c); updatePreview(); };
             document.getElementById('color-picker').appendChild(b);
         });
+
         for(let i=1; i<=10; i++) {
             let b = document.createElement('button'); b.className = 'style-btn'; b.innerText = i;
             b.onclick = () => { document.body.className = 'style-' + i; updatePreview(); };
             document.getElementById('style-picker').appendChild(b);
         }
+
         refreshMenu();
         updateInterface();
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('Mátrix Páncél aktív!'))
+                    .then(reg => {
+                        console.log('Mátrix Páncél aktív!', reg);
+                        if ('Notification' in window) {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === 'granted') console.log('Mátrix: Értesítések engedélyezve! 🚀');
+                            });
+                        }
+                    })
                     .catch(err => console.log('Hiba a páncélozásnál:', err));
             });
         }
