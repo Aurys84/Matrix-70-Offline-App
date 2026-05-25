@@ -160,9 +160,16 @@
             <div id="main-content"></div>
         </div>
     </div>
-
-<script src="database.js"></script>
-
+    
+<script>
+  // A Mátrix Labor biztonsági betöltése
+  const dbScript = document.createElement('script');
+  dbScript.src = 'database.js';
+  dbScript.onload = () => {
+      console.log('Mátrix Labor: Adatbázis online és offline is elérhető!');
+      if(typeof refreshAllSelects === 'function') refreshAllSelects();
+  };
+  document.body.appendChild(dbScript);
 <script>
 function mentesWordbe() {
     const rootStyles = getComputedStyle(document.documentElement);
