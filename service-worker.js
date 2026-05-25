@@ -1,4 +1,5 @@
 // A './' helyett használd a teljes útvonalat:
+const CACHE_NAME = 'matrix-70-offline-v2'; // <--- ÁTÍRTAM v2-re, hogy a telefon kötelezően frissítsen!
 const urlsToCache = [
   '/Matrix--70-App/',
   '/Matrix--70-App/index.html',
@@ -6,19 +7,20 @@ const urlsToCache = [
   '/Matrix--70-App/manifest.json',
   '/Matrix--70-App/store_icon.png'
 ];
-// 1. Telepítés és a fájlok kőkemény beégetése a telefon belső tárhelyére
+
+// 1. Telepítés: Abszolút útvonalakkal égetjük be
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Mátrix Labor: Offline cache kiépítve!');
+        console.log('Mátrix Labor v2: Offline cache kiépítve!');
         return cache.addAll(urlsToCache);
       })
-      .then(() => self.skipWaiting()) // Azonnali aktiválásra kényszerítjük
+      .then(() => self.skipWaiting())
   );
 });
 
-// 2. Régi verziók kíméletlen takarítása aktiváláskor
+// 2. Aktiválás: A régi v1-es szemetet takarítjuk
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -30,85 +32,71 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Azonnal átveszi az irányítást az app felett
+    }).then(() => self.clients.claim())
   );
 });
 
-// 3. Golyóálló Offline Elérési Stratégia (Cache-First)
+// 3. Golyóálló Fetch (Adatbázis prioritással)
 self.addEventListener('fetch', event => {
-  // Csak a sima lekérésekkel foglalkozunk (pl. ne akadjon össze külső API-kkal)
+  // 1. Speciális kezelés a database.js-nek (kényszerített cache)
+  if (event.request.url.includes('database.js')) {
+    event.respondWith(
+      caches.match('/Matrix--70-App/database.js').then(response => {
+        return response || fetch(event.request);
+      })
+    );
+    return;
+  }
+
+  // 2. Általános Cache-First stratégia
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
-        // Ha megvan a telefonon (Cache), AZONNAL azt adjuk vissza (Zéró-Késés, Offline működés)
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+        if (cachedResponse) return cachedResponse;
 
-        // Ha valamiért nincs a gyorsítótárban, csak akkor megyünk ki a hálózatra
         return fetch(event.request).then(networkResponse => {
           if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
             return networkResponse;
           }
-          // Amit a netről lekért, azt is gyorsan elmentjük a jövőre nézve offline-ra
           let responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache);
           });
           return networkResponse;
         }).catch(() => {
-          // Ha nincs net ÉS nincs a cache-ben sem (pl. egy új link), akkor sem dobunk hibát
-          console.log('Mátrix Labor: Teljes offline mód, hálózati hiba.');
+          console.log('Mátrix Labor: Offline mód - hálózati erőforrás nem elérhető.');
         });
       })
   );
 });
 
-// --- Értesítési Logika START ---
-
+// --- Értesítési Logika ---
 self.addEventListener('push', function(event) {
     let data = { title: 'Mátrix Labor', body: 'Rendszerüzenet érkezett!' };
-    
     if (event.data) {
-        try {
-            data = event.data.json();
-        } catch (e) {
-            data.body = event.data.text();
-        }
+        try { data = event.data.json(); } catch (e) { data.body = event.data.text(); }
     }
-    
     const options = {
         body: data.body,
-        icon: 'store_icon.png', // Átírva a meglévő, cache-elt ikonra!
-        badge: 'store_icon.png', // Átírva a meglévő, cache-elt ikonra!
+        icon: '/Matrix--70-App/store_icon.png',
+        badge: '/Matrix--70-App/store_icon.png',
         vibrate: [200, 100, 200],
-        data: {
-            url: self.registration.scope
-        }
+        data: { url: self.registration.scope }
     };
-
-    event.waitUntil(
-        self.registration.showNotification(data.title, options)
-    );
+    event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
-    
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
             for (let client of clientList) {
-                if (client.url === event.notification.data.url && 'focus' in client) {
-                    return client.focus();
-                }
+                if (client.url === event.notification.data.url && 'focus' in client) return client.focus();
             }
-            if (clients.openWindow) {
-                return clients.openWindow(event.notification.data.url);
-            }
+            if (clients.openWindow) return clients.openWindow(event.notification.data.url);
         })
     );
 });
-
 // --- Értesítési Logika END ---
