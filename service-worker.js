@@ -1,12 +1,11 @@
-const CACHE_NAME = 'matrix-70-offline-v1';
+// A './' helyett használd a teljes útvonalat:
 const urlsToCache = [
-  './',
-  './index.html',
-  './database.js',
-  './manifest.json',
-  './store_icon.png'
+  '/Matrix--70-App/',
+  '/Matrix--70-App/index.html',
+  '/Matrix--70-App/database.js',
+  '/Matrix--70-App/manifest.json',
+  '/Matrix--70-App/store_icon.png'
 ];
-
 // 1. Telepítés és a fájlok kőkemény beégetése a telefon belső tárhelyére
 self.addEventListener('install', event => {
   event.waitUntil(
